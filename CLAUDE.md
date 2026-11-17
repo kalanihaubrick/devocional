@@ -2,6 +2,8 @@
 
 PWA gamificado para o hábito de devocional e leitura: timer com meta diária por atividade, XP, níveis, sequência, calendário e conquistas. Interface e textos em **português (pt-BR)**.
 
+**Tom dos textos:** o app nasceu para devocionais, mas a mensagem fica **implícita**. Não use termos religiosos explícitos (Deus, oração, amém, livros bíblicos) em textos, exemplos ou botões. Referências sutis, como as metáforas de crescimento dos níveis (Semente → Árvore Frutífera → Oliveira → Junto às Águas), são bem-vindas. O nome "Devocional" fica.
+
 - **Produção:** https://kalanihaubrick.github.io/devocional/ (GitHub Pages, branch `main`, raiz). Cada push publica uma versão nova.
 - **Repositório:** `kalanihaubrick/devocional` (público).
 - **Backend:** Supabase, projeto `dwwugdicatihfgsrttzg`. A URL e a chave *publishable* em `config.js` são públicas por design.

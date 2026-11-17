@@ -121,7 +121,7 @@
       var a = Game.ACHIEVEMENTS.filter(function (x) { return x.id === id; })[0];
       if (a) html += '<p>' + a.icon + ' Conquista: <b>' + esc(a.name) + '</b></p>';
     });
-    html += '<button class="btn primary" data-ok>Amém!</button></div>';
+    html += '<button class="btn primary" data-ok>Continuar</button></div>';
     openModal(html, function (c) { c.querySelector('[data-ok]').onclick = closeModal; });
     if (leveled || fresh.length) chime();
   }
@@ -244,6 +244,7 @@
     if (!Auth.enabled) info = 'Modo local: os dados ficam só neste aparelho. Configure o Supabase em config.js para ter login e sincronização.';
     else info = 'Conectado como ' + esc((Auth.user && Auth.user.email) || '') + '.';
     $('account-info').innerHTML = info;
+    $('toggle-sheep').textContent = '🐑 Ovelha lendo: ' + (sheepOn() ? 'ligada' : 'desligada');
     $('sync-now').classList.toggle('hidden', !Auth.enabled);
     $('logout').classList.toggle('hidden', !Auth.enabled);
     $('version').textContent = 'Devocional v' + VERSION;
@@ -295,7 +296,10 @@
     openTimer();
   }
 
+  function sheepOn() { return !Store.state.hideSheep; }
+
   function openTimer() {
+    $('timer').classList.toggle('with-sheep', sheepOn());
     $('timer').classList.remove('hidden');
     $('tabbar').classList.add('hidden');
     tick();
@@ -336,9 +340,15 @@
     $('timer-pause').textContent = a.pausedAt ? 'Continuar' : 'Pausar';
     $('timer-xp').textContent = '+' + Math.floor(el / 60) + ' min nesta sessão';
 
+    var sheep = $('sheep');
+    sheep.classList.toggle('paused', !!a.pausedAt);
+    sheep.classList.toggle('done', done);
+
     if (done && !a.goalNotified) {
       a.goalNotified = true;
       Store.save();
+      sheep.classList.add('cheer');
+      setTimeout(function () { sheep.classList.remove('cheer'); }, 2400);
       chime();
       toast('🎯 Meta de ' + t.name + ' batida! +20 XP');
     }
@@ -366,8 +376,8 @@
     }
     var t = Store.typeById(a.typeId);
     openModal('<h3>' + esc(t.name) + ' · ' + fmtClock(el) + '</h3>' +
-      '<label>O que você leu? (opcional)<input id="f-passage" placeholder="Ex.: Salmos 23" maxlength="120"></label>' +
-      '<label>Anotação / reflexão (opcional)<textarea id="f-note" maxlength="4000" placeholder="O que Deus falou com você hoje?"></textarea></label>' +
+      '<label>O que você leu? (opcional)<input id="f-passage" placeholder="Ex.: capítulo 3" maxlength="120"></label>' +
+      '<label>Anotação (opcional)<textarea id="f-note" maxlength="4000" placeholder="O que ficou com você hoje?"></textarea></label>' +
       '<button class="btn primary" data-save>Salvar sessão</button>' +
       '<button class="btn ghost" data-back>Voltar ao timer</button>', function (c) {
       c.querySelector('[data-back]').onclick = function () { closeModal(); togglePause(); };
@@ -424,7 +434,7 @@
     var t = id ? Store.typeById(id) : { id: Store.uuid(), name: '', goalMin: 10, color: Store.COLORS[Store.state.types.length % Store.COLORS.length], archived: false };
     var color = t.color;
     openModal('<h3>' + (id ? 'Editar atividade' : 'Nova atividade') + '</h3>' +
-      '<label>Nome<input id="t-name" maxlength="40" value="' + esc(t.name) + '" placeholder="Ex.: Oração"></label>' +
+      '<label>Nome<input id="t-name" maxlength="40" value="' + esc(t.name) + '" placeholder="Ex.: Estudo"></label>' +
       '<label>Meta diária (minutos)<input id="t-goal" type="number" inputmode="numeric" min="1" max="600" value="' + t.goalMin + '"></label>' +
       '<div class="tiny muted">Cor</div><div class="colors">' + Store.COLORS.map(function (c) {
         return '<button type="button" data-color="' + c + '" class="' + (c === color ? 'sel' : '') + '" style="background:' + c + '"></button>';
@@ -511,6 +521,11 @@
       if (b) editType(b.getAttribute('data-edit'));
     });
     $('type-add').addEventListener('click', function () { editType(null); });
+    $('toggle-sheep').addEventListener('click', function () {
+      Store.state.hideSheep = sheepOn();
+      Store.save();
+      renderSettings();
+    });
 
     $('sync-now').addEventListener('click', function () {
       Store.state.lastPull = 0; Store.save();

@@ -1,8 +1,8 @@
 # 📖 Devocional
 
-Um timer gamificado para criar o hábito do devocional e da leitura diária. Ele funciona como um **app no iPhone**, inclusive em aparelhos antigos como o iPhone 7 Plus (iOS 15), instalado pelo Safari como PWA.
+Um timer gamificado para criar o hábito da leitura e da reflexão diária. Ele funciona como um **app no iPhone**, inclusive em aparelhos antigos como o iPhone 7 Plus (iOS 15), instalado pelo Safari como PWA.
 
-- ⏱️ **Timer com meta diária por atividade.** Exemplo: Devocional com meta de 10 min, feito 30 min. Leitura com meta de 10 min, feito 10 min.
+- ⏱️ **Timer com meta diária por atividade.** Exemplo: Leitura com meta de 10 min, feito 30 min. Reflexão com meta de 10 min, feito 10 min.
 - ⭐ **XP e níveis.** Você ganha 1 XP por minuto, mais 20 XP por meta batida, mais 10 XP se bater todas as metas do dia. A sequência dá um bônus de +5% a cada 7 dias, até no máximo +50%.
 - 🔥 **Sequência de dias.** O dia conta quando você bate pelo menos uma meta. O app guarda também o seu recorde.
 - 📅 **Histórico em calendário,** com o que foi lido e suas anotações.

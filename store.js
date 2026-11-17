@@ -27,8 +27,8 @@
       ownerId: null,
       pristine: true,          // ainda não houve uso (permite trocar pelos tipos da nuvem)
       types: [
-        { id: uuid(), name: 'Devocional', goalMin: 10, color: COLORS[0], archived: false, updatedAt: t },
-        { id: uuid(), name: 'Leitura', goalMin: 10, color: COLORS[1], archived: false, updatedAt: t }
+        { id: uuid(), name: 'Leitura', goalMin: 10, color: COLORS[0], archived: false, updatedAt: t },
+        { id: uuid(), name: 'Reflexão', goalMin: 10, color: COLORS[1], archived: false, updatedAt: t }
       ],
       sessions: [],
       active: null,

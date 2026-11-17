@@ -18,7 +18,7 @@
     [12, 'Árvore', '🌳'],
     [17, 'Árvore Frutífera', '🍇'],
     [23, 'Oliveira', '🫒'],
-    [30, 'Cedro do Líbano', '🌲'],
+    [30, 'Árvore Centenária', '🌲'],
     [40, 'Junto às Águas', '💧']
   ];
 
@@ -154,7 +154,7 @@
     { id: 'all1', icon: '🏆', name: 'Dia completo', desc: 'Bater todas as metas em um dia', test: function (s) { return s.allMetDays >= 1; } },
     { id: 'streak3', icon: '🔥', name: 'Aquecendo', desc: '3 dias seguidos', test: function (s) { return s.bestStreak >= 3; } },
     { id: 'streak7', icon: '📆', name: 'Uma semana', desc: '7 dias seguidos', test: function (s) { return s.bestStreak >= 7; } },
-    { id: 'streak30', icon: '🌙', name: 'Um mês fiel', desc: '30 dias seguidos', test: function (s) { return s.bestStreak >= 30; } },
+    { id: 'streak30', icon: '🌙', name: 'Um mês inteiro', desc: '30 dias seguidos', test: function (s) { return s.bestStreak >= 30; } },
     { id: 'streak100', icon: '💎', name: 'Cem dias', desc: '100 dias seguidos', test: function (s) { return s.bestStreak >= 100; } },
     { id: 'all7', icon: '👑', name: 'Semana completa', desc: 'Todas as metas por 7 dias seguidos', test: function (s) { return s.bestAllStreak >= 7; } },
     { id: 'long30', icon: '⏳', name: 'Mergulho profundo', desc: '30 minutos em uma única sessão', test: function (s) { return s.longestSec >= 1800; } },

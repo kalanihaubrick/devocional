@@ -122,6 +122,12 @@
       <div id="types-list" class="types-list"></div>
       <button class="btn" id="type-add">+ Nova atividade</button>
 
+      <h2 class="section-title">Timer</h2>
+      <div class="panel">
+        <button class="btn" id="toggle-sheep">🐑 Ovelha lendo: ligada</button>
+        <p class="tiny muted">Animação que aparece no timer enquanto você lê.</p>
+      </div>
+
       <h2 class="section-title">Conta</h2>
       <div class="panel">
         <p id="account-info" class="muted"></p>
@@ -141,13 +147,84 @@
 
     <!-- TIMER (tela cheia) -->
     <section id="timer" class="timer hidden">
-      <div class="timer-type" id="timer-type">Devocional</div>
+      <div class="timer-type" id="timer-type">Leitura</div>
       <div class="ring-wrap">
         <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
           <circle cx="60" cy="60" r="52" class="ring-bg"></circle>
           <circle cx="60" cy="60" r="52" class="ring-fg" id="ring-fg"></circle>
         </svg>
         <div class="ring-center">
+          <!-- Ovelha lendo (animada via CSS; estados: .paused, .done, .cheer) -->
+          <svg class="sheep" id="sheep" viewBox="0 0 140 110" aria-hidden="true">
+            <!-- brilhos (meta batida) -->
+            <g class="sparkles">
+              <path class="spark s1" d="M14 30 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 z"/>
+              <path class="spark s2" d="M124 18 l1.5 -4.5 l1.5 4.5 l4.5 1.5 l-4.5 1.5 l-1.5 4.5 l-1.5 -4.5 l-4.5 -1.5 z"/>
+              <path class="spark s3" d="M10 60 l1.5 -4.5 l1.5 4.5 l4.5 1.5 l-4.5 1.5 l-1.5 4.5 l-1.5 -4.5 l-4.5 -1.5 z"/>
+            </g>
+            <g class="sheep-all">
+              <!-- corpo de lã (deitada) -->
+              <g class="wool">
+                <g class="wool-shade">
+                  <circle cx="35" cy="50" r="17.5"/><circle cx="55" cy="40" r="20.5"/><circle cx="82" cy="38" r="21.5"/>
+                  <circle cx="105" cy="45" r="19.5"/><circle cx="121" cy="59" r="15.5"/><circle cx="25" cy="66" r="14.5"/>
+                  <circle cx="48" cy="62" r="21.5"/><circle cx="80" cy="60" r="23.5"/><circle cx="106" cy="64" r="18.5"/>
+                </g>
+                <g class="wool-fill">
+                  <circle cx="35" cy="50" r="16"/><circle cx="55" cy="40" r="19"/><circle cx="82" cy="38" r="20"/>
+                  <circle cx="105" cy="45" r="18"/><circle cx="121" cy="59" r="14"/><circle cx="25" cy="66" r="13"/>
+                  <circle cx="48" cy="62" r="20"/><circle cx="80" cy="60" r="22"/><circle cx="106" cy="64" r="17"/>
+                </g>
+                <circle class="tail" cx="131" cy="50" r="5"/>
+              </g>
+              <!-- livro aberto no chão -->
+              <g class="book">
+                <path class="cover" d="M70 69 Q50 63 26 66 L21 96 Q46 91 70 99 Q94 91 119 96 L114 66 Q90 63 70 69 Z"/>
+                <path class="page" d="M70 66 Q50 60 30 63 L25 92 Q48 88 70 95 Z"/>
+                <path class="page" d="M70 66 Q90 60 110 63 L115 92 Q92 88 70 95 Z"/>
+                <g class="lines">
+                  <path d="M33 70 Q50 67 64 72"/><path d="M32 76 Q49 73 64 78"/><path d="M31 82 Q48 79 64 84"/>
+                  <path d="M76 72 Q90 67 107 70"/><path d="M76 78 Q91 73 108 76"/><path d="M76 84 Q92 79 109 82"/>
+                </g>
+                <path class="page flip" d="M70 66 Q90 60 110 63 L115 92 Q92 88 70 95 Z"/>
+                <line class="spine" x1="70" y1="66" x2="70" y2="95"/>
+              </g>
+              <!-- cabeça debruçada sobre o livro -->
+              <g class="head">
+                <ellipse class="ear" cx="53" cy="47" rx="9" ry="4.5" transform="rotate(-35 53 47)"/>
+                <ellipse class="ear" cx="87" cy="47" rx="9" ry="4.5" transform="rotate(35 87 47)"/>
+                <ellipse class="face" cx="70" cy="53" rx="14.5" ry="14"/>
+                <g class="tuft"><circle cx="63" cy="40" r="6"/><circle cx="70" cy="37" r="7"/><circle cx="77" cy="40" r="6"/></g>
+                <g class="eyes-open">
+                  <ellipse class="eye-white" cx="64" cy="53" rx="3.3" ry="2.9"/>
+                  <ellipse class="eye-white" cx="76" cy="53" rx="3.3" ry="2.9"/>
+                  <circle class="pupil" cx="64.4" cy="54.6" r="1.6"/>
+                  <circle class="pupil" cx="76.4" cy="54.6" r="1.6"/>
+                </g>
+                <g class="eyes-closed">
+                  <path d="M60.5 54 q3.5 2.6 7 0"/><path d="M72.5 54 q3.5 2.6 7 0"/>
+                </g>
+                <circle class="cheek" cx="59.5" cy="59.5" r="2.3"/>
+                <circle class="cheek" cx="80.5" cy="59.5" r="2.3"/>
+                <ellipse class="nose" cx="70" cy="62" rx="2.8" ry="1.8"/>
+              </g>
+              <!-- patas: a esquerda apoiada, a direita vira a página -->
+              <g class="leg arm-l">
+                <ellipse class="sleeve" cx="23" cy="80" rx="5.5" ry="10" transform="rotate(12 23 80)"/>
+                <ellipse class="hoof" cx="27" cy="90" rx="5.5" ry="4"/>
+              </g>
+              <g class="leg arm">
+                <ellipse class="sleeve" cx="117" cy="80" rx="5.5" ry="10" transform="rotate(-12 117 80)"/>
+                <ellipse class="hoof" cx="113" cy="90" rx="5.5" ry="4"/>
+              </g>
+            </g>
+            <!-- Zzz (pausado) -->
+            <g class="zzz">
+              <text class="z z1" x="88" y="38">z</text>
+              <text class="z z2" x="96" y="30">z</text>
+              <text class="z z3" x="104" y="22">Z</text>
+            </g>
+          </svg>
           <div class="timer-clock" id="timer-clock">00:00</div>
           <div class="tiny muted" id="timer-goal">meta 10 min</div>
         </div>
