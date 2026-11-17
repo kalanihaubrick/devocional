@@ -12,21 +12,34 @@ Um timer gamificado para criar o hábito do devocional e da leitura diária. Ele
 
 ---
 
-## 1. Testar no computador
+## Quero ter o meu próprio Devocional
 
-O app funciona sem configurar nada. Nesse caso ele roda em **modo local**: sem login, com os dados só naquele aparelho.
+Siga os passos abaixo para ter a sua cópia, com os seus dados no seu próprio banco. Tudo é gratuito. Você vai precisar de uma conta no GitHub, uma conta no Supabase (só se quiser login e sincronização) e um Gmail (para enviar o código de primeiro acesso).
 
-```bash
-npx serve .
-```
+| Passo | O que você terá | Tempo |
+|---|---|---|
+| 1 a 3 | App no celular em **modo local** (dados só no aparelho) | ~5 min |
+| 4 | **Conta e sincronização** entre aparelhos | ~20 min |
 
-Abra o endereço que aparecer (normalmente http://localhost:3000).
+## 1. Copiar o projeto (fork)
+
+1. Clique em **Fork**, no canto superior direito desta página do GitHub, e confirme. Isso cria uma cópia em `github.com/SEU-USUARIO/devocional`.
+2. Na sua cópia, abra o arquivo `config.js`, clique no lápis (✏️) e **apague os valores** da URL e da chave, para que fique assim:
+   ```js
+   window.APP_CONFIG = {
+     SUPABASE_URL: '',
+     SUPABASE_ANON_KEY: ''
+   };
+   ```
+   Clique em **Commit changes**. Com os valores em branco, o app roda em **modo local**. Se você não apagar, a sua cópia vai tentar usar o banco do projeto original.
+
+> Para testar no computador antes, rode `npx serve .` na pasta do projeto e abra o endereço que aparecer.
 
 ## 2. Publicar no GitHub Pages
 
-1. Envie os arquivos para o repositório (`git push`).
-2. No GitHub, vá em **Settings → Pages → Build and deployment**. Em *Source*, escolha **Deploy from a branch**, e depois **main** e **/ (root)**. Clique em **Save**.
-3. Em 1 a 2 minutos o app estará em `https://kalanihaubrick.github.io/devocional/`.
+1. Na sua cópia no GitHub, vá em **Settings → Pages → Build and deployment**.
+2. Em *Source*, escolha **Deploy from a branch**, e depois **main** e **/ (root)**. Clique em **Save**.
+3. Em 1 a 2 minutos o app estará em `https://SEU-USUARIO.github.io/devocional/`. O link também aparece no topo da mesma página.
 
 ## 3. Instalar no iPhone
 
@@ -43,8 +56,9 @@ Abra o endereço que aparecer (normalmente http://localhost:3000).
 Sem esta etapa, os dados ficam só no aparelho. Com ela, você entra com **e-mail e código do autenticador** e o progresso fica salvo na nuvem.
 
 ### 4.1 Criar o projeto
-1. Crie uma conta em https://supabase.com e um **New project**. Escolha a região mais próxima, por exemplo *South America (São Paulo)*.
-2. Abra o **SQL Editor → New query**, cole todo o conteúdo de [`supabase/schema.sql`](supabase/schema.sql) e clique em **Run**.
+1. Crie uma conta em https://supabase.com e um **New project**. Escolha a região mais próxima, por exemplo *South America (São Paulo)*. Guarde a senha do banco num lugar seguro (o app não usa essa senha).
+2. Abra o **SQL Editor → New query**, cole todo o conteúdo de [`supabase/schema.sql`](supabase/schema.sql) e clique em **Run**. Deve aparecer *Success. No rows returned*.
+3. Em **Authentication → URL Configuration**, coloque em *Site URL* o endereço do seu app no GitHub Pages.
 
 ### 4.2 Configurar o envio do código por e-mail
 O código por e-mail só é usado no **primeiro acesso** e para **recuperar a conta**.
@@ -76,7 +90,6 @@ Salve. A partir daí, os templates passam a ser editáveis.
    <h2>Seu código do Devocional</h2>
    <p>Digite este código no app: <b style="font-size:24px">{{ .Token }}</b></p>
    ```
-3. Em **Authentication → URL Configuration**, coloque em *Site URL* o endereço do GitHub Pages.
 
 > Com o SMTP próprio, o limite inicial é de 30 e-mails por hora (ajustável em *Rate Limits*). Isso sobra para o primeiro acesso e para recuperações.
 
@@ -103,16 +116,25 @@ npx supabase functions deploy totp-login --no-verify-jwt --project-ref SEU_PROJE
 As funções já recebem `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` automaticamente. **Nunca** coloque a service role key no app.
 
 ### 4.4 Ligar o app ao Supabase
-Em **Project Settings → API**, copie a *Project URL* e a chave *anon* (ou *publishable*) e cole em [`config.js`](config.js):
+Você precisa de dois valores do painel do Supabase:
+
+- **Project URL:** é `https://SEU_PROJECT_REF.supabase.co`. O *Project Ref* é o código que aparece no endereço do painel, depois de `/project/`. A URL também aparece em **Project Settings (engrenagem) → Data API**.
+- **Publishable key:** fica em **Project Settings (engrenagem) → API Keys**, e começa com `sb_publishable_...`. Se o seu projeto mostrar a aba *Legacy API keys*, a chave **anon** (`eyJ...`) também serve.
+
+Atalho: o botão **Connect**, no topo da página do projeto, mostra os dois juntos.
+
+Cole os dois em [`config.js`](config.js), na sua cópia no GitHub (lápis ✏️ e depois **Commit changes**):
 
 ```js
 window.APP_CONFIG = {
-  SUPABASE_URL: 'https://xxxx.supabase.co',
-  SUPABASE_ANON_KEY: 'eyJ...'
+  SUPABASE_URL: 'https://SEU_PROJECT_REF.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_...'
 };
 ```
 
-A chave *anon* é pública por design. Quem protege os dados são as regras RLS do banco: cada usuário só vê os próprios registros. Depois de colar, faça o commit e o push.
+Depois de um ou dois minutos, abra o app e faça o **Primeiro acesso**.
+
+> **O que é público e o que é secreto:** a URL e a chave *publishable/anon* são públicas por design e ficam visíveis no site. Quem protege os dados são as regras RLS do banco, que deixam cada usuário ver só os próprios registros. **Nunca** coloque no app nem compartilhe a *secret key* (`sb_secret_...`), a *service_role*, a senha do banco ou a senha de app do Gmail.
 
 ### Como funciona o login
 | Situação | O que acontece |
@@ -140,4 +162,15 @@ A chave *anon* é pública por design. Quem protege os dados são as regras RLS 
 | `sw.js`, `manifest.webmanifest`, `icons/` | PWA: instalação e uso offline |
 | `supabase/` | Esquema do banco e Edge Functions |
 
-Ao publicar uma versão nova, aumente `CACHE` em `sw.js` (ex.: `devocional-v2`) para os aparelhos baixarem a atualização.
+Ao publicar uma versão nova, aumente `CACHE` em `sw.js` (ex.: de `devocional-v2` para `devocional-v3`) para os aparelhos baixarem a atualização.
+
+## Problemas comuns
+
+| Sintoma | Solução |
+|---|---|
+| O código de primeiro acesso não chega | Olhe o spam. Confira o SMTP (4.2b): a *Password* precisa ser a senha de app de 16 caracteres, não a senha do Gmail. |
+| O e-mail chega com um link em vez de um código | O template ainda não tem `{{ .Token }}` (4.2c). Edite os templates **Magic Link** e **Confirm signup**. |
+| "Sem conexão com o servidor" ao entrar | As Edge Functions não foram publicadas, têm outro nome ou estão com *Verify JWT* ligado (4.3). |
+| "Código incorreto" no autenticador | Ative o horário automático no celular (Ajustes → Geral → Data e Hora). |
+| Erro ao publicar a função ("Relative import path…") | Cole o arquivo inteiro de `index.ts` da função; cada uma é independente. |
+| O app não mostra a versão nova | Feche o app pelo seletor de apps e abra de novo. |
