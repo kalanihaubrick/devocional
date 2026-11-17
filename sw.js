@@ -1,6 +1,6 @@
 /* Service worker: guarda os arquivos do app em cache para funcionar offline.
  * Ao publicar uma nova versão, aumente CACHE para forçar a atualização. */
-var CACHE = 'devocional-v1';
+var CACHE = 'devocional-v2';
 var ASSETS = [
   './',
   'index.html',
