@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Devocional</title>
+  <meta name="description" content="Timer gamificado para devocionais e leitura diária">
+  <meta name="theme-color" content="#1b1530">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Devocional">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- ===== Tela de autenticação ===== -->
+  <section id="auth" class="auth hidden">
+    <div class="auth-card">
+      <div class="auth-logo">📖</div>
+      <h1>Devocional</h1>
+      <p class="muted" id="auth-subtitle">Crie o hábito, um dia de cada vez.</p>
+
+      <!-- Login: e-mail + código do autenticador -->
+      <form id="auth-login" class="auth-step" novalidate>
+        <label>E-mail<input type="email" id="login-email" autocomplete="email" inputmode="email" autocapitalize="off" required></label>
+        <label>Código do autenticador<input type="text" id="login-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" required></label>
+        <button class="btn primary" type="submit">Entrar</button>
+        <div class="auth-links">
+          <button type="button" class="link" data-goto="email">Primeiro acesso</button>
+          <button type="button" class="link" data-goto="email" data-recover="1">Perdi o autenticador</button>
+        </div>
+      </form>
+
+      <!-- Cadastro/recuperação: pedir código por e-mail -->
+      <form id="auth-email" class="auth-step hidden" novalidate>
+        <p class="muted" id="email-step-text">Vamos confirmar seu e-mail. Enviaremos um código de 6 dígitos.</p>
+        <label>E-mail<input type="email" id="signup-email" autocomplete="email" inputmode="email" autocapitalize="off" required></label>
+        <button class="btn primary" type="submit">Enviar código</button>
+        <button type="button" class="link" data-goto="login">Voltar</button>
+      </form>
+
+      <!-- Digitar código recebido por e-mail -->
+      <form id="auth-emailcode" class="auth-step hidden" novalidate>
+        <p class="muted">Digite o código enviado para <b id="emailcode-target"></b>.</p>
+        <label>Código do e-mail<input type="text" id="emailcode" inputmode="numeric" maxlength="10" autocomplete="one-time-code" placeholder="000000" required></label>
+        <button class="btn primary" type="submit">Confirmar</button>
+        <button type="button" class="link" data-goto="email">Reenviar / trocar e-mail</button>
+      </form>
+
+      <!-- Cadastrar o autenticador -->
+      <form id="auth-enroll" class="auth-step hidden" novalidate>
+        <p class="muted">Adicione esta conta no seu app autenticador (Google Authenticator, Authy, 1Password…).</p>
+        <a class="btn" id="enroll-link" href="#">Abrir no app autenticador</a>
+        <div id="enroll-qr" class="qr"></div>
+        <p class="tiny muted">Ou digite esta chave manualmente no app:</p>
+        <code id="enroll-secret" class="secret"></code>
+        <button type="button" class="btn ghost small" id="enroll-copy">Copiar chave</button>
+        <label>Código gerado pelo app<input type="text" id="enroll-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" required></label>
+        <button class="btn primary" type="submit">Ativar</button>
+      </form>
+
+      <p id="auth-msg" class="auth-msg" role="alert"></p>
+    </div>
+  </section>
+
+  <!-- ===== App ===== -->
+  <main id="app" class="hidden">
+    <!-- HOJE -->
+    <section id="view-today" class="view">
+      <header class="hero">
+        <div class="hero-top">
+          <div>
+            <div class="level-title" id="level-title">Semente</div>
+            <div class="level-num">Nível <span id="level-num">1</span></div>
+          </div>
+          <div class="streak" title="Dias consecutivos">
+            <div><span class="flame">🔥</span><span id="streak-num">0</span></div>
+            <div class="tiny muted">recorde <span id="streak-best">0</span></div>
+          </div>
+        </div>
+        <div class="xpbar"><div class="xpfill" id="xp-fill"></div></div>
+        <div class="xp-text tiny"><span id="xp-text">0 / 100 XP</span><span id="xp-total">0 XP no total</span></div>
+        <div id="sync-badge" class="sync-badge tiny"></div>
+      </header>
+      <h2 class="section-title">Hoje <span class="muted tiny" id="today-date"></span></h2>
+      <div id="today-cards" class="cards"></div>
+      <p class="tiny muted center" id="today-hint"></p>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section id="view-history" class="view hidden">
+      <h2 class="section-title">Histórico</h2>
+      <div class="cal-head">
+        <button class="btn ghost small" id="cal-prev" aria-label="Mês anterior">‹</button>
+        <strong id="cal-title"></strong>
+        <button class="btn ghost small" id="cal-next" aria-label="Próximo mês">›</button>
+      </div>
+      <div class="cal-grid cal-dow"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="legend tiny muted">
+        <span><i class="dot d1"></i>atividade</span>
+        <span><i class="dot d2"></i>meta batida</span>
+        <span><i class="dot d3"></i>todas as metas</span>
+      </div>
+      <div id="day-detail" class="day-detail"></div>
+      <h2 class="section-title">Estatísticas</h2>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <!-- CONQUISTAS -->
+    <section id="view-achievements" class="view hidden">
+      <h2 class="section-title">Conquistas <span class="muted tiny" id="ach-count"></span></h2>
+      <div id="ach-list" class="ach-list"></div>
+    </section>
+
+    <!-- AJUSTES -->
+    <section id="view-settings" class="view hidden">
+      <h2 class="section-title">Atividades e metas</h2>
+      <div id="types-list" class="types-list"></div>
+      <button class="btn" id="type-add">+ Nova atividade</button>
+
+      <h2 class="section-title">Conta</h2>
+      <div class="panel">
+        <p id="account-info" class="muted"></p>
+        <button class="btn" id="sync-now">Sincronizar agora</button>
+        <button class="btn ghost" id="logout">Sair deste aparelho</button>
+      </div>
+
+      <h2 class="section-title">Backup</h2>
+      <div class="panel">
+        <button class="btn" id="export">Exportar backup (JSON)</button>
+        <label class="btn ghost file-btn">Importar backup<input type="file" id="import" accept="application/json,.json"></label>
+        <button class="btn danger" id="reset">Apagar dados deste aparelho</button>
+      </div>
+      <p class="tiny muted center">Dica: em Ajustes do iPhone → Tela e Brilho → Bloqueio Automático, aumente o tempo para a tela não apagar durante a leitura. Mesmo se apagar, o timer continua contando certo.</p>
+      <p class="tiny muted center" id="version"></p>
+    </section>
+
+    <!-- TIMER (tela cheia) -->
+    <section id="timer" class="timer hidden">
+      <div class="timer-type" id="timer-type">Devocional</div>
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" class="ring-bg"></circle>
+          <circle cx="60" cy="60" r="52" class="ring-fg" id="ring-fg"></circle>
+        </svg>
+        <div class="ring-center">
+          <div class="timer-clock" id="timer-clock">00:00</div>
+          <div class="tiny muted" id="timer-goal">meta 10 min</div>
+        </div>
+      </div>
+      <div class="timer-status" id="timer-status">Em andamento</div>
+      <div class="timer-xp tiny" id="timer-xp"></div>
+      <div class="timer-actions">
+        <button class="btn big" id="timer-pause">Pausar</button>
+        <button class="btn big primary" id="timer-stop">Concluir</button>
+      </div>
+      <button class="link tiny" id="timer-cancel">Descartar sessão</button>
+    </section>
+
+    <nav class="tabbar" id="tabbar">
+      <button data-view="today" class="active"><span>🏠</span>Hoje</button>
+      <button data-view="history"><span>📅</span>Histórico</button>
+      <button data-view="achievements"><span>🏅</span>Conquistas</button>
+      <button data-view="settings"><span>⚙️</span>Ajustes</button>
+    </nav>
+  </main>
+
+  <!-- Modal genérico -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card" id="modal-card"></div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script src="game.js"></script>
+  <script src="store.js"></script>
+  <script src="sync.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
