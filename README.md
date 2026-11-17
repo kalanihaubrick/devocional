@@ -48,7 +48,29 @@ Sem esta etapa, os dados ficam só no aparelho. Com ela, você entra com **e-mai
 
 ### 4.2 Configurar o envio do código por e-mail
 O código por e-mail só é usado no **primeiro acesso** e para **recuperar a conta**.
-1. Vá em **Authentication → Emails (Templates)**.
+
+> Desde junho de 2026, projetos novos no plano grátis **só podem editar os templates de e-mail se usarem um SMTP próprio**. O Gmail serve como SMTP grátis.
+
+**a) Criar uma senha de app no Gmail**
+1. Na sua Conta Google, vá em **Segurança** e ative a **Verificação em duas etapas**, se ainda não estiver ativa.
+2. Acesse https://myaccount.google.com/apppasswords, crie uma senha com o nome "Supabase" e copie os 16 caracteres.
+
+**b) Ligar o SMTP no Supabase**
+Vá em **Authentication → Emails → SMTP Settings**, ative **Enable custom SMTP** e preencha:
+
+| Campo | Valor |
+|---|---|
+| Sender email | seu endereço do Gmail |
+| Sender name | Devocional |
+| Host | `smtp.gmail.com` |
+| Port | `465` |
+| Username | seu endereço do Gmail |
+| Password | a senha de app de 16 caracteres (não é a senha normal do Gmail) |
+
+Salve. A partir daí, os templates passam a ser editáveis.
+
+**c) Editar os templates**
+1. Vá em **Authentication → Emails → Templates**.
 2. Nos templates **Magic Link** e **Confirm signup**, troque o corpo para mostrar o código:
    ```html
    <h2>Seu código do Devocional</h2>
@@ -56,7 +78,7 @@ O código por e-mail só é usado no **primeiro acesso** e para **recuperar a co
    ```
 3. Em **Authentication → URL Configuration**, coloque em *Site URL* o endereço do GitHub Pages.
 
-> O servidor de e-mail grátis do Supabase envia poucos e-mails por hora. Para o primeiro acesso e para recuperações, isso basta.
+> Com o SMTP próprio, o limite inicial é de 30 e-mails por hora (ajustável em *Rate Limits*). Isso sobra para o primeiro acesso e para recuperações.
 
 ### 4.3 Publicar as 2 Edge Functions
 Dá para fazer pelo painel ou pelo terminal.
