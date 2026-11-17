@@ -87,7 +87,7 @@ Dá para fazer pelo painel ou pelo terminal.
 - `totp-enroll`: cole o conteúdo de `supabase/functions/totp-enroll/index.ts`.
 - `totp-login`: cole o conteúdo de `supabase/functions/totp-login/index.ts`.
 
-O editor do painel não importa arquivos de outras pastas. Por isso, nas duas funções, **substitua** a linha `import ... from '../_shared/common.ts';` pelo conteúdo inteiro de `supabase/functions/_shared/common.ts`. Depois, em **Details** de cada função, **desligue "Verify JWT"**.
+Cada função é um arquivo único: é só colar e clicar em **Deploy function**, com o nome exatamente como acima. Depois, em **Details** de cada função, **desligue "Verify JWT"** e salve.
 
 **Pelo terminal:**
 ```bash

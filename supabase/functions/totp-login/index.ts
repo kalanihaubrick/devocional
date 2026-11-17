@@ -1,11 +1,35 @@
 // Login sem senha: e-mail + código do app autenticador.
 // Valida o código e devolve um token de uso único (hashed_token de um magic link gerado
 // pelo servidor, sem enviar e-mail). O app troca esse token por uma sessão com verifyOtp.
-import { admin, checkCode, cors, json } from '../_shared/common.ts';
+// Arquivo único: pode ser colado direto no editor de Edge Functions do Supabase.
+import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
+import * as OTPAuth from 'npm:otpauth@9.3.4';
 
 const MAX_FAILS = 5;
 const WINDOW_MIN = 15;
 const GENERIC = 'E-mail ou código inválido.';
+
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
+}
+
+/** Valida o código (±30s). Retorna o "passo" de tempo usado, ou null se inválido. */
+function checkCode(secretBase32: string, label: string, code: string): number | null {
+  if (!/^\d{6}$/.test(code)) return null;
+  const totp = new OTPAuth.TOTP({
+    issuer: 'Devocional', label, algorithm: 'SHA1', digits: 6, period: 30,
+    secret: OTPAuth.Secret.fromBase32(secretBase32),
+  });
+  const delta = totp.validate({ token: code, window: 1 });
+  if (delta === null) return null;
+  return Math.floor(Date.now() / 1000 / 30) + delta;
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
@@ -17,7 +41,10 @@ Deno.serve(async (req) => {
   const code = String(body.code || '').replace(/\D/g, '');
   if (!email || code.length !== 6) return json({ ok: false, error: GENERIC });
 
-  const db = admin();
+  // service role: ignora RLS. A chave fica só no servidor, nunca no app.
+  const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
   // limpeza ocasional de tentativas antigas
   if (Math.random() < 0.05) {
